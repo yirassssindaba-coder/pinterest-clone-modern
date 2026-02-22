@@ -1,15 +1,16 @@
 <div align="center">
 
 <!-- Animated Wave Header -->
-<img src="https://capsule-render.vercel.app/api?type=waving&height=210&color=0:16a34a,100:22c55e&text=Secure%20Multiplayer%20Game&fontSize=56&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Real-time%20Socket.IO%20Game%20•%20Security%20Headers%20•%20FCC%20InfoSec&descAlignY=58" />
+<img src="https://capsule-render.vercel.app/api?type=waving&height=210&color=0:16a34a,100:22c55e&text=Pinterest%20Clone%20Modern&fontSize=56&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=TypeScript%20•%20Express%20•%20Drizzle%20+%20Postgres%20•%20Modern%20UI&descAlignY=58" />
 
 <!-- Typing SVG -->
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=18&duration=3000&pause=700&color=16A34A&center=true&vCenter=true&width=780&lines=Real-time+Socket.IO+game+%E2%80%A2+secure+headers+%E2%80%A2+tests+%E2%9C%85;Fast+setup+%E2%80%A2+Clean+server+%E2%80%A2+PowerShell-friendly;FreeCodeCamp+InfoSec+project+ready" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=18&duration=3000&pause=700&color=16A34A&center=true&vCenter=true&width=780&lines=Fullstack+TypeScript+%E2%80%A2+Express+API+%E2%80%A2+Drizzle+%2B+Postgres;Session-based+auth+%E2%80%A2+Clean+structure+%E2%80%A2+PowerShell-friendly;Ready+to+extend+into+boards%2C+pins%2C+and+profiles" />
 
 <!-- Badges -->
-![node](https://img.shields.io/badge/node-%3E%3D18-16a34a?logo=node.js&logoColor=white)
+![typescript](https://img.shields.io/badge/typescript-5.x-2563eb?logo=typescript&logoColor=white)
 ![express](https://img.shields.io/badge/express-API-0ea5e9?logo=express&logoColor=white)
-![socketio](https://img.shields.io/badge/socket.io-realtime-0f172a?logo=socketdotio&logoColor=white)
+![postgres](https://img.shields.io/badge/postgresql-db-2563eb?logo=postgresql&logoColor=white)
+![drizzle](https://img.shields.io/badge/drizzle-orm-0f172a)
 ![windows](https://img.shields.io/badge/windows-powershell-2563eb?logo=windows&logoColor=white)
 </div>
 
@@ -17,72 +18,88 @@
 
 ## Overview
 
-🎮 **Secure Multiplayer Game** is a real-time Socket.IO game server with security headers enabled (Helmet) and a Mocha test suite (FCC InfoSec project).
+📌 **Pinterest Clone Modern** is a fullstack TypeScript starter: Express server + Drizzle ORM on Postgres, session auth, and a static SPA UI in `/public`.
+
+---
+
+## Features
+
+- TypeScript server with Express (ESM)
+- PostgreSQL via Drizzle ORM (`shared/schema.ts`)
+- Session-based auth (`connect-pg-simple`)
+- SPA UI served from `/public` with API under `/api/*`
+- Friendly scripts for Windows PowerShell
 
 ---
 
 ## Quick Start
 
-### Windows PowerShell
+### 1) Configure `.env`
 
 ```powershell
-cd "secure-multiplayer-game-modern"
+cd "pinterest-clone-modern"
+Copy-Item .env.example .env
+notepad .env
+```
 
+### 2) Install & migrate
+
+```powershell
 npm install
-Copy-Item .env.example .env -ErrorAction SilentlyContinue
+npm run db:push
+```
 
-npm start
+### 3) Run (dev)
+
+```powershell
+npm run dev:win
 ```
 
 Open:
-- `http://localhost:3000`
+- `http://127.0.0.1:5000`
 
 ---
 
 ## Environment Variables
 
-Optional `.env`:
-
 ```env
-PORT=3000
-```
-
----
-
-## Testing
-
-- Windows PowerShell:
-```powershell
-npm run test:win
+DATABASE_URL=postgres://postgres:YOUR_PASSWORD@localhost:5432/pinterest_clone
+SESSION_SECRET=change-me
+PORT=5000
+# Fix for Windows if you ever see listen ENOTSUP
+HOST=127.0.0.1
 ```
 
 ---
 
 ## Scripts
 
-- `npm start` — run server
-- `npm run dev` — watch mode
-- `npm test` — tests (POSIX env syntax)
-- `npm run test:win` — tests on Windows
+- `npm run dev` — watch mode (tsx)
+- `npm run dev:win` — watch mode (PowerShell)
+- `npm run start` — run server (no watch)
+- `npm run db:push` — push Drizzle schema
+- `npm run build` — TypeScript build
 
 ---
 
 ## Troubleshooting
 
-- **Port busy** → change `PORT` in `.env`.
-- If you see random console errors from Chrome extensions on `localhost`, try Incognito or disable extensions.
+- **`drizzle-kit` not found** → run `npm install` first, or use `npx drizzle-kit push`.
+- **`password authentication failed`** → update `DATABASE_URL` password.
+- **`database does not exist`** → create the DB first (Postgres).
+- **`listen ENOTSUP` on Windows** → set `HOST=127.0.0.1` in `.env`.
 
 ---
 
 ## Project Structure
 
 ```text
-secure-multiplayer-game-modern/
-  server.js
-  routes/
+pinterest-clone-modern/
+  server/
+  shared/
   public/
-  tests/
-  views/
+  drizzle.config.ts
+  package.json
 ```
 
 ---
