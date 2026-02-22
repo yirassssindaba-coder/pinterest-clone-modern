@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PinBoard - Share Your Images</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+  <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #667eea;
+    }
+
+    .user-name {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #667eea;
+      color: #667eea;
+    }
+
+    .btn-outline:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #ff4757;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #ff3344;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: white;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    .add-image-form {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .add-image-form h3 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .grid {
+      margin: 0 auto;
+    }
+
+    .grid-sizer,
+    .grid-item {
+      width: calc(25% - 15px);
+    }
+
+    @media (max-width: 1200px) {
+      .grid-sizer, .grid-item { width: calc(33.333% - 13px); }
+    }
+
+    @media (max-width: 800px) {
+      .grid-sizer, .grid-item { width: calc(50% - 10px); }
+    }
+
+    @media (max-width: 500px) {
+      .grid-sizer, .grid-item { width: 100%; }
+    }
+
+    .grid-item {
+      margin-bottom: 20px;
+    }
+
+    .pin-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+
+    .pin-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .pin-card img {
+      width: 100%;
+      display: block;
+    }
+
+    .pin-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.5) 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem;
+    }
+
+    .pin-card:hover .pin-overlay {
+      opacity: 1;
+    }
+
+    .pin-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .delete-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+    }
+
+    .delete-btn:hover {
+      background: #ff4757;
+      color: white;
+    }
+
+    .pin-info {
+      color: white;
+    }
+
+    .pin-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .pin-user {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      cursor: pointer;
+    }
+
+    .pin-user:hover {
+      text-decoration: underline;
+    }
+
+    .user-wall-header {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .wall-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #667eea;
+    }
+
+    .wall-info h2 {
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .wall-info p {
+      color: #666;
+    }
+
+    .back-btn {
+      margin-right: auto;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem;
+      color: white;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .placeholder-img {
+      background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 0.9rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      padding: 0.6rem 1.5rem;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .tab.active {
+      background: white;
+      color: #667eea;
+    }
+
+    .tab:hover:not(.active) {
+      background: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">PinBoard</div>
+    <div class="nav-actions" id="nav-actions">
+      <a href="/api/login" class="btn btn-primary">Login with GitHub</a>
+    </div>
+  </nav>
+
+  <div class="container" id="app">
+    <div class="loading">Loading...</div>
+  </div>
+
+  <script>
+    const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"%3E%3Crect fill="%23f0f0f0" width="300" height="200"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not available%3C/text%3E%3C/svg%3E';
+    
+    let currentUser = null;
+    let currentView = 'all';
+    let viewingUserId = null;
+    let msnry = null;
+
+    async function init() {
+      await checkAuth();
+      await render();
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/user');
+        if (res.ok) {
+          currentUser = await res.json();
+          updateNavbar();
+        }
+      } catch (err) {
+        console.log('Not authenticated');
+      }
+    }
+
+    function updateNavbar() {
+      const navActions = document.getElementById('nav-actions');
+      if (currentUser) {
+        const name = currentUser.claims.first_name || currentUser.claims.email || 'User';
+        const avatar = currentUser.claims.profile_image_url || PLACEHOLDER_IMAGE;
+        navActions.innerHTML = `
+          <div class="user-info">
+            <img src="${avatar}" alt="${name}" class="user-avatar" onerror="this.src='${PLACEHOLDER_IMAGE}'">
+            <span class="user-name">${name}</span>
+          </div>
+          <a href="/api/logout" class="btn btn-outline">Logout</a>
+        `;
+      }
+    }
+
+    async function render() {
+      const app = document.getElementById('app');
+      
+      if (viewingUserId) {
+        await renderUserWall(app);
+      } else {
+        await renderMainView(app);
+      }
+    }
+
+    async function renderMainView(app) {
+      let html = '';
+      
+      if (!currentUser) {
+        html += `
+          <div class="hero">
+            <h1>Share Your World</h1>
+            <p>Discover and share beautiful images with our community. Login with GitHub to start pinning!</p>
+            <a href="/api/login" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+              Get Started
+            </a>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="tabs">
+            <button class="tab ${currentView === 'all' ? 'active' : ''}" onclick="switchView('all')">All Pins</button>
+            <button class="tab ${currentView === 'my' ? 'active' : ''}" onclick="switchView('my')">My Pins</button>
+          </div>
+          
+          <div class="add-image-form">
+            <h3>Add New Pin</h3>
+            <form onsubmit="addImage(event)" class="form-row">
+              <div class="form-group">
+                <input type="url" id="imageUrl" placeholder="Image URL" required>
+              </div>
+              <div class="form-group">
+                <input type="text" id="imageTitle" placeholder="Title (optional)">
+              </div>
+              <button type="submit" class="btn btn-primary">Pin It</button>
+            </form>
+          </div>
+        `;
+      }
+
+      html += '<div class="grid" id="grid"><div class="grid-sizer"></div></div>';
+      app.innerHTML = html;
+
+      const images = await fetchImages();
+      renderImages(images);
+    }
+
+    async function renderUserWall(app) {
+      const user = await fetchUser(viewingUserId);
+      const images = await fetchUserImages(viewingUserId);
+      
+      const name = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User' : 'User';
+      const avatar = user?.profileImageUrl || PLACEHOLDER_IMAGE;
+      
+      app.innerHTML = `
+        <div class="user-wall-header">
+          <button class="btn btn-outline back-btn" onclick="goBack()">← Back</button>
+          <img src="${avatar}" alt="${name}" class="wall-avatar" onerror="this.src='${PLACEHOLDER_IMAGE}'">
+          <div class="wall-info">
+            <h2>${name}'s Wall</h2>
+            <p>${images.length} pin${images.length !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+        <div class="grid" id="grid"><div class="grid-sizer"></div></div>
+      `;
+
+      renderImages(images, false);
+    }
+
+    async function fetchImages() {
+      const endpoint = currentView === 'my' ? '/api/my-images' : '/api/images';
+      const res = await fetch(endpoint);
+      if (res.ok) {
+        return await res.json();
+      }
+      return [];
+    }
+
+    async function fetchUserImages(userId) {
+      const res = await fetch(`/api/images/user/${userId}`);
+      if (res.ok) {
+        return await res.json();
+      }
+      return [];
+    }
+
+    async function fetchUser(userId) {
+      const res = await fetch(`/api/users/${userId}`);
+      if (res.ok) {
+        return await res.json();
+      }
+      return null;
+    }
+
+    function renderImages(images, showUser = true) {
+      const grid = document.getElementById('grid');
+      
+      if (images.length === 0) {
+        grid.innerHTML = `
+          <div class="grid-sizer"></div>
+          <div class="empty-state">
+            <h3>No pins yet</h3>
+            <p>${currentUser ? 'Be the first to add a pin!' : 'Login to start pinning!'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="grid-sizer"></div>';
+      
+      images.forEach(img => {
+        const canDelete = currentUser && img.userId === currentUser.claims.sub;
+        const userName = showUser ? `${img.userFirstName || ''} ${img.userLastName || ''}`.trim() || 'Anonymous' : '';
+        
+        html += `
+          <div class="grid-item">
+            <div class="pin-card">
+              <img src="${img.url}" alt="${img.title || 'Pin'}" 
+                   onerror="this.onerror=null; this.src='${PLACEHOLDER_IMAGE}'">
+              <div class="pin-overlay">
+                ${canDelete ? `
+                  <div class="pin-actions">
+                    <button class="delete-btn" onclick="deleteImage(${img.id})" title="Delete">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                ` : '<div></div>'}
+                <div class="pin-info">
+                  ${img.title ? `<div class="pin-title">${img.title}</div>` : ''}
+                  ${showUser ? `<div class="pin-user" onclick="viewUserWall('${img.userId}')">${userName}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      grid.innerHTML = html;
+
+      imagesLoaded(grid, function() {
+        msnry = new Masonry(grid, {
+          itemSelector: '.grid-item',
+          columnWidth: '.grid-sizer',
+          percentPosition: true,
+          gutter: 20
+        });
+      });
+    }
+
+    async function addImage(e) {
+      e.preventDefault();
+      const url = document.getElementById('imageUrl').value;
+      const title = document.getElementById('imageTitle').value;
+
+      try {
+        const res = await fetch('/api/images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, title })
+        });
+
+        if (res.ok) {
+          document.getElementById('imageUrl').value = '';
+          document.getElementById('imageTitle').value = '';
+          await render();
+        } else {
+          alert('Failed to add image');
+        }
+      } catch (err) {
+        alert('Error adding image');
+      }
+    }
+
+    async function deleteImage(id) {
+      if (!confirm('Delete this pin?')) return;
+
+      try {
+        const res = await fetch(`/api/images/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          await render();
+        } else {
+          alert('Failed to delete image');
+        }
+      } catch (err) {
+        alert('Error deleting image');
+      }
+    }
+
+    function switchView(view) {
+      currentView = view;
+      render();
+    }
+
+    function viewUserWall(userId) {
+      viewingUserId = userId;
+      render();
+    }
+
+    function goBack() {
+      viewingUserId = null;
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>
